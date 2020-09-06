@@ -5,7 +5,7 @@ import shutil
 import csv
 import re
 from collections import Counter
-import time
+import datetime
 
 
 
@@ -42,27 +42,45 @@ def pictSearchPercent(datafile):
                 break
             else:
                 pass
-    print(totalcount, pictcount)
-    print("Image requests account for {0}% of all requests".format(float(totalcount / pictcount).__round__(2)))
+    print("Image requests account for {:.0%} of all requests".format(float(pictcount / totalcount)))
+
 
 def statBrowserUse(datafile):
     browserlist = []
     for item in datafile:
-        test = item[2].split(' ')
-        print(item[2])
-        #TODO - work on regex string
-        for x in ('Firefox', 'Chrome\/ \sSafari\/[0-9]*', 'Trident','Safari'):
+        # The order is important since Chrome UA includes safari, but not the other way around
+        for x in ('Firefox', 'Chrome', 'MSIE','Safari'):
             if re.search(x, item[2], re.IGNORECASE) is not None:
                 browserlist.append(x)
-                print(browserlist)
                 break
             else:
                 pass
-    print(Counter(browserlist))
+    g = Counter(browserlist)
+    print('The most common browser is {0} with a total of {1} hits'.format(g.most_common(1)[0][0],
+          g.most_common(1)[0][1]))
 
 
-url = urlparse()
-url = downloadData(url)
-url = processData(url)
-pictSearchPercent(url)
-statBrowserUse(url)
+def statByHours(datafile):
+    hourlist = list()
+    for x in datafile:
+        h = datetime.datetime.fromisoformat(x[1])
+        hourlist.append(h.strftime('%-H'))
+    hourlist = sorted(Counter(hourlist).items())
+    for x in range(0, 25):
+        if x >= len(hourlist):
+            print('Hour {0} has 0 hits'.format(x))
+        else:
+            if str(x) == hourlist[x][0]:
+                print('Hour {0} has {1} hits'.format(x, hourlist[x][1]))
+            else:
+                pass
+def main():
+    url = urlparse()
+    url = downloadData(url)
+    url = processData(url)
+    pictSearchPercent(url)
+    statBrowserUse(url)
+    statByHours(url)
+
+
+main()
