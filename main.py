@@ -8,8 +8,7 @@ from collections import Counter
 import datetime
 
 
-
-def urlparse():
+def urlParse():
     parser = argparse.ArgumentParser(description='pull information from a url')
     parser.add_argument('--url', help='type a url string that will bring you to a website')
     args = parser.parse_args()
@@ -25,7 +24,7 @@ def downloadData(url):
 
 def processData(urlfile):
     processfile = list()
-    with open(urlfile, 'rt') as f:
+    with open(urlfile) as f:
         reader = csv.reader(f)
         for row in reader:
             processfile.append(list(row))
@@ -46,20 +45,21 @@ def pictSearchPercent(datafile):
 
 
 def statBrowserUse(datafile):
-    browserlist = []
+    browserlist = list()
     for item in datafile:
-        # The order is important since Chrome UA includes safari, but not the other way around
-        for x in ('Firefox', 'Chrome', 'MSIE','Safari'):
+        # The order of this tuple is important since Chrome UA includes safari, but not the other way around
+        for x in ('Firefox', 'Chrome', 'MSIE', 'Safari'):
             if re.search(x, item[2], re.IGNORECASE) is not None:
                 browserlist.append(x)
                 break
             else:
                 pass
-    g = Counter(browserlist)
-    print('The most common browser is {0} with a total of {1} hits'.format(g.most_common(1)[0][0],
-          g.most_common(1)[0][1]))
+    # I saved a variable because I couldn't think of a better way to share the value in a more readable format.
+    print('The most common browser is {0} with a total of {1} hits'.format(Counter(browserlist).most_common(1)[0][0],
+                                                                           Counter(browserlist).most_common(1)[0][1]))
 
 
+# extra credit
 def statByHours(datafile):
     hourlist = list()
     for x in datafile:
@@ -74,13 +74,15 @@ def statByHours(datafile):
                 print('Hour {0} has {1} hits'.format(x, hourlist[x][1]))
             else:
                 pass
+
+
 def main():
-    url = urlparse()
-    url = downloadData(url)
-    url = processData(url)
-    pictSearchPercent(url)
-    statBrowserUse(url)
-    statByHours(url)
+    url = urlParse()
+    urldata = downloadData(url)
+    csvdata = processData(urldata)
+    pictSearchPercent(csvdata)
+    statBrowserUse(csvdata)
+    statByHours(csvdata)
 
 
 main()
